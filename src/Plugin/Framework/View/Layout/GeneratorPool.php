@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Infrangible\LayoutUpdate\Plugin\Framework\View\Layout;
 
 use FeWeDev\Base\Arrays;
+use FeWeDev\Base\Variables;
+use Infrangible\Core\Helper\Stores;
 use Infrangible\LayoutUpdate\Model\Config\LayoutUpdate;
 use Magento\Framework\View\Layout\Reader\Context;
 
@@ -21,10 +23,18 @@ class GeneratorPool
     /** @var Arrays */
     protected $arrays;
 
-    public function __construct(LayoutUpdate $layoutUpdate, Arrays $arrays)
+    /** @var Stores */
+    protected $storeHelper;
+
+    /** @var Variables */
+    protected $variables;
+
+    public function __construct(LayoutUpdate $layoutUpdate, Arrays $arrays, Stores $storeHelper, Variables $variables)
     {
         $this->layoutUpdate = $layoutUpdate;
         $this->arrays = $arrays;
+        $this->storeHelper = $storeHelper;
+        $this->variables = $variables;
     }
 
     /** @noinspection PhpUnusedParameterInspection */
@@ -55,46 +65,67 @@ class GeneratorPool
                         );
 
                         foreach ($attributeUpdates as $actions) {
-                            foreach ($actions as $action => $valueData) {
-                                $value = $valueData[ 'value' ];
-                                $trim = $valueData[ 'trim' ];
+                            foreach ($actions as $action => $values) {
+                                foreach ($values as $valueData) {
+                                    $type = $valueData[ 'type' ];
+                                    $ifConfig = $valueData[ 'ifConfig' ];
+                                    $configValue = $valueData[ 'configValue' ];
+                                    $value = $valueData[ 'value' ];
+                                    $trim = $valueData[ 'trim' ];
 
-                                if ($currentValue === null) {
-                                    $currentValue = '';
-                                }
+                                    if ($type === 'config') {
+                                        $value = $this->storeHelper->getStoreConfig($value);
+                                    }
 
-                                if ($action === 'prefix') {
-                                    if (strlen($currentValue) > 0) {
-                                        $currentValue = sprintf(
-                                            '%s %s',
+                                    if ($ifConfig) {
+                                        if ($this->variables->isEmpty($configValue)) {
+                                            if (! $this->storeHelper->getStoreConfigFlag($ifConfig)) {
+                                                continue;
+                                            }
+                                        } else {
+                                            if ($this->storeHelper->getStoreConfig($ifConfig) != $configValue) {
+                                                continue;
+                                            }
+                                        }
+                                    }
+
+                                    if ($currentValue === null) {
+                                        $currentValue = '';
+                                    }
+
+                                    if ($action === 'prefix') {
+                                        if (strlen($currentValue) > 0) {
+                                            $currentValue = sprintf(
+                                                '%s %s',
+                                                $value,
+                                                $currentValue
+                                            );
+                                        } else {
+                                            $currentValue = $value;
+                                        }
+                                    } elseif ($action === 'suffix') {
+                                        if (strlen($currentValue) > 0) {
+                                            $currentValue = sprintf(
+                                                '%s %s',
+                                                $currentValue,
+                                                $value
+                                            );
+                                        } else {
+                                            $currentValue = $value;
+                                        }
+                                    } elseif ($action === 'remove') {
+                                        $currentValue = str_replace(
                                             $value,
+                                            '',
                                             $currentValue
                                         );
-                                    } else {
+                                    } elseif ($action === 'replace') {
                                         $currentValue = $value;
                                     }
-                                } elseif ($action === 'suffix') {
-                                    if (strlen($currentValue) > 0) {
-                                        $currentValue = sprintf(
-                                            '%s %s',
-                                            $currentValue,
-                                            $value
-                                        );
-                                    } else {
-                                        $currentValue = $value;
-                                    }
-                                } elseif ($action === 'remove') {
-                                    $currentValue = str_replace(
-                                        $value,
-                                        '',
-                                        $currentValue
-                                    );
-                                } elseif ($action === 'replace') {
-                                    $currentValue = $value;
-                                }
 
-                                if ($trim) {
-                                    $currentValue = trim($currentValue);
+                                    if ($trim) {
+                                        $currentValue = trim($currentValue);
+                                    }
                                 }
                             }
                         }

@@ -43,10 +43,10 @@ class Converter implements ConverterInterface
                         $elementAttributes = $childChildNode->attributes;
 
                         if ($elementAttributes) {
-                            /** @var DOMAttr $elementName */
-                            $elementName = $elementAttributes->getNamedItem('name');
+                            /** @var DOMAttr $elementNameNode */
+                            $elementNameNode = $elementAttributes->getNamedItem('name');
 
-                            if ($elementName) {
+                            if ($elementNameNode) {
                                 /** @var DOMNode $childChildChildNode */
                                 foreach ($childChildNode->childNodes as $childChildChildNode) {
                                     if ($childChildChildNode->nodeName === 'update') {
@@ -54,28 +54,43 @@ class Converter implements ConverterInterface
                                         $updateAttributes = $childChildChildNode->attributes;
 
                                         if ($updateAttributes) {
-                                            $attributeName = $updateAttributes->getNamedItem('attributeName');
-                                            $action = $updateAttributes->getNamedItem('action');
-                                            $trim = $updateAttributes->getNamedItem('trim');
-                                            $sortOrder = $updateAttributes->getNamedItem('sortOrder');
+                                            /** @var DOMAttr $attributeNameNode */
+                                            $attributeNameNode = $updateAttributes->getNamedItem('attributeName');
+                                            /** @var DOMAttr $actionNode */
+                                            $actionNode = $updateAttributes->getNamedItem('action');
+                                            /** @var DOMAttr $typeNode */
+                                            $typeNode = $updateAttributes->getNamedItem('type');
+                                            /** @var DOMAttr $ifConfigNode */
+                                            $ifConfigNode = $updateAttributes->getNamedItem('ifConfig');
+                                            /** @var DOMAttr $configValueNode */
+                                            $configValueNode = $updateAttributes->getNamedItem('configValue');
+                                            /** @var DOMAttr $trimNode */
+                                            $trimNode = $updateAttributes->getNamedItem('trim');
+                                            /** @var DOMAttr $sortOrderNode */
+                                            $sortOrderNode = $updateAttributes->getNamedItem('sortOrder');
 
-                                            if ($attributeName && $action) {
-                                                $result = $this->arrays->addDeepValue(
-                                                    $result,
-                                                    [
-                                                        (string)$elementName->nodeValue,
-                                                        (string)$attributeName->nodeValue,
-                                                        $sortOrder ? (int)$sortOrder->nodeValue : 0,
-                                                        (string)$action->nodeValue
-                                                    ],
-                                                    [
-                                                        'value' => (string)$childChildChildNode->nodeValue,
-                                                        'trim'  => $trim ? filter_var(
-                                                            (string)$trim->nodeValue,
-                                                            FILTER_VALIDATE_BOOLEAN
-                                                        ) : false
-                                                    ]
-                                                );
+                                            if ($attributeNameNode && $actionNode && $typeNode) {
+                                                $elementName = (string)$elementNameNode->nodeValue;
+                                                $attributeName = (string)$attributeNameNode->nodeValue;
+                                                $sortOrder = $sortOrderNode ? (int)$sortOrderNode->nodeValue : 0;
+                                                $action = (string)$actionNode->nodeValue;
+                                                $type = (string)$typeNode->nodeValue;
+                                                $ifConfig = $ifConfigNode ? (string)$ifConfigNode->nodeValue : null;
+                                                $configValue =
+                                                    $configValueNode ? (string)$configValueNode->nodeValue : null;
+                                                $trim = $trimNode ? filter_var(
+                                                    (string)$trimNode->nodeValue,
+                                                    FILTER_VALIDATE_BOOLEAN
+                                                ) : false;
+                                                $value = (string)$childChildChildNode->nodeValue;
+
+                                                $result[ $elementName ][ $attributeName ][ $sortOrder ][ $action ][] = [
+                                                    'type'        => $type,
+                                                    'ifConfig'    => $ifConfig,
+                                                    'configValue' => $configValue,
+                                                    'trim'        => $trim,
+                                                    'value'       => $value
+                                                ];
                                             }
                                         }
                                     }
