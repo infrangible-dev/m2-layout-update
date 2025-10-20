@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+
+<!--
+ * @author      Andreas Knollmann
+ * @copyright   2014-2025 Softwareentwicklung Andreas Knollmann
+ * @license     http://www.opensource.org/licenses/mit-license.php MIT
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="update">
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute type="xs:string" name="attributeName" use="required"/>
+                    <xs:attribute name="action" use="required">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="prefix"/>
+                                <xs:enumeration value="suffix"/>
+                                <xs:enumeration value="remove"/>
+                                <xs:enumeration value="replace"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                    <xs:attribute type="xs:boolean" name="trim" use="required"/>
+                    <xs:attribute type="xs:int" name="sortOrder"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:simpleType name="elementNameType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[a-zA-Z0-9][a-zA-Z\d\-_\.]*"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:element name="element">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="update" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute type="elementNameType" name="name"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="layout">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="element" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
