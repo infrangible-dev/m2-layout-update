@@ -79,8 +79,24 @@ class GeneratorPool
 
                                     if ($ifConfig) {
                                         if ($this->variables->isEmpty($configValue)) {
-                                            if (! $this->storeHelper->getStoreConfigFlag($ifConfig)) {
-                                                continue;
+                                            if (preg_match(
+                                                '/^!/',
+                                                $ifConfig
+                                            )) {
+                                                $ifConfig = trim(
+                                                    substr(
+                                                        $ifConfig,
+                                                        1
+                                                    )
+                                                );
+
+                                                if ($this->storeHelper->getStoreConfigFlag($ifConfig)) {
+                                                    continue;
+                                                }
+                                            } else {
+                                                if (! $this->storeHelper->getStoreConfigFlag($ifConfig)) {
+                                                    continue;
+                                                }
                                             }
                                         } else {
                                             if ($this->storeHelper->getStoreConfig($ifConfig) != $configValue) {
