@@ -2,7 +2,7 @@
 
 <!--
  * @author      Andreas Knollmann
- * @copyright   2014-2025 Softwareentwicklung Andreas Knollmann
+ * @copyright   Copyright (c) 2014-2026 Softwareentwicklung Andreas Knollmann
  * @license     http://www.opensource.org/licenses/mit-license.php MIT
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
@@ -39,7 +39,7 @@
     </xs:element>
     <xs:simpleType name="elementNameType">
         <xs:restriction base="xs:string">
-            <xs:pattern value="[a-zA-Z0-9][a-zA-Z\d\-_\.]*"/>
+            <xs:pattern value="[a-zA-Z0-9][a-zA-Z\d\-_.]*"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:element name="element">

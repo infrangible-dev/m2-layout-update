@@ -2,106 +2,89 @@
 
 declare(strict_types=1);
 
+/**
+ * @author      Andreas Knollmann
+ * @copyright   Copyright (c) 2014-2026 Softwareentwicklung Andreas Knollmann
+ * @license     http://www.opensource.org/licenses/mit-license.php MIT
+ */
+
 namespace Infrangible\LayoutUpdate\Model\Config\LayoutUpdate;
 
-use DOMAttr;
 use DOMDocument;
-use DOMNamedNodeMap;
+use DOMElement;
 use DOMNode;
-use FeWeDev\Base\Arrays;
 use Magento\Framework\Config\ConverterInterface;
 
 /**
- * @author      Andreas Knollmann
- * @copyright   2014-2025 Softwareentwicklung Andreas Knollmann
- * @license     http://www.opensource.org/licenses/mit-license.php MIT
+ * Converts the merged layout updates into an array: element name => attribute name => sort order => action => updates
+ * with type, ifConfig, configValue, trim and value.
  */
 class Converter implements ConverterInterface
 {
-    /** @var Arrays */
-    protected $arrays;
-
-    public function __construct(Arrays $arrays)
-    {
-        $this->arrays = $arrays;
-    }
-
     /**
+     * Converts the merged files.
+     *
      * @param DOMDocument $source
+     *
+     * @return array
+     * @phpstan-return array<string, array<string, array<int, array<string, array<int, array<string, mixed>>>>>>
      */
     public function convert($source): array
     {
         $result = [];
 
-        /** @var DOMNode $childNode */
-        foreach ($source->childNodes as $childNode) {
-            if ($childNode->nodeName === 'layout') {
-                /** @var DOMNode $childChildNode */
-                foreach ($childNode->childNodes as $childChildNode) {
-                    if ($childChildNode->nodeName === 'element') {
-                        /** @var DOMNamedNodeMap $elementAttributes */
-                        $elementAttributes = $childChildNode->attributes;
+        foreach ($this->getChildElements($source, 'layout') as $layout) {
+            foreach ($this->getChildElements($layout, 'element') as $element) {
+                $elementName = $element->getAttribute('name');
 
-                        if ($elementAttributes) {
-                            /** @var DOMAttr $elementNameNode */
-                            $elementNameNode = $elementAttributes->getNamedItem('name');
+                if ($elementName === '') {
+                    continue;
+                }
 
-                            if ($elementNameNode) {
-                                /** @var DOMNode $childChildChildNode */
-                                foreach ($childChildNode->childNodes as $childChildChildNode) {
-                                    if ($childChildChildNode->nodeName === 'update') {
-                                        /** @var DOMNamedNodeMap $updateAttributes */
-                                        $updateAttributes = $childChildChildNode->attributes;
+                foreach ($this->getChildElements($element, 'update') as $update) {
+                    $attributeName = $update->getAttribute('attributeName');
+                    $action = $update->getAttribute('action');
+                    $type = $update->getAttribute('type');
 
-                                        if ($updateAttributes) {
-                                            /** @var DOMAttr $attributeNameNode */
-                                            $attributeNameNode = $updateAttributes->getNamedItem('attributeName');
-                                            /** @var DOMAttr $actionNode */
-                                            $actionNode = $updateAttributes->getNamedItem('action');
-                                            /** @var DOMAttr $typeNode */
-                                            $typeNode = $updateAttributes->getNamedItem('type');
-                                            /** @var DOMAttr $ifConfigNode */
-                                            $ifConfigNode = $updateAttributes->getNamedItem('ifConfig');
-                                            /** @var DOMAttr $configValueNode */
-                                            $configValueNode = $updateAttributes->getNamedItem('configValue');
-                                            /** @var DOMAttr $trimNode */
-                                            $trimNode = $updateAttributes->getNamedItem('trim');
-                                            /** @var DOMAttr $sortOrderNode */
-                                            $sortOrderNode = $updateAttributes->getNamedItem('sortOrder');
-
-                                            if ($attributeNameNode && $actionNode && $typeNode) {
-                                                $elementName = (string)$elementNameNode->nodeValue;
-                                                $attributeName = (string)$attributeNameNode->nodeValue;
-                                                $sortOrder = $sortOrderNode ? (int)$sortOrderNode->nodeValue : 0;
-                                                $action = (string)$actionNode->nodeValue;
-                                                $type = (string)$typeNode->nodeValue;
-                                                $ifConfig = $ifConfigNode ? (string)$ifConfigNode->nodeValue : null;
-                                                $configValue =
-                                                    $configValueNode ? (string)$configValueNode->nodeValue : null;
-                                                $trim = $trimNode ? filter_var(
-                                                    (string)$trimNode->nodeValue,
-                                                    FILTER_VALIDATE_BOOLEAN
-                                                ) : false;
-                                                $value = (string)$childChildChildNode->nodeValue;
-
-                                                $result[ $elementName ][ $attributeName ][ $sortOrder ][ $action ][] = [
-                                                    'type'        => $type,
-                                                    'ifConfig'    => $ifConfig,
-                                                    'configValue' => $configValue,
-                                                    'trim'        => $trim,
-                                                    'value'       => $value
-                                                ];
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                    if ($attributeName === '' || $action === '' || $type === '') {
+                        continue;
                     }
+
+                    $sortOrder = (int)$update->getAttribute('sortOrder');
+
+                    $result[ $elementName ][ $attributeName ][ $sortOrder ][ $action ][] = [
+                        'type'        => $type,
+                        'ifConfig'    => $update->hasAttribute('ifConfig') ? $update->getAttribute('ifConfig') : null,
+                        'configValue' => $update->hasAttribute('configValue') ?
+                            $update->getAttribute('configValue') : null,
+                        'trim'        => filter_var($update->getAttribute('trim'), FILTER_VALIDATE_BOOLEAN),
+                        'value'       => $update->nodeValue ?? ''
+                    ];
                 }
             }
         }
 
         return $result;
+    }
+
+    /**
+     * Returns the child elements with the name.
+     *
+     * @param DOMNode $node
+     * @param string $name
+     *
+     * @return DOMElement[]
+     */
+    private function getChildElements(DOMNode $node, string $name): array
+    {
+        $elements = [];
+
+        foreach ($node->childNodes as $childNode) {
+            if ($childNode instanceof DOMElement && $childNode->nodeName === $name) {
+                $elements[] = $childNode;
+            }
+        }
+
+        return $elements;
     }
 }
