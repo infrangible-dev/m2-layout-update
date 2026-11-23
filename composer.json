@@ -25,6 +25,9 @@
         "infrangible/m2-foundation": "~3.0.1",
         "magento/framework": "~103.0.6"
     },
+    "require-dev": {
+        "infrangible/phpstan-magento": "~1.0.0"
+    },
     "autoload": {
         "files": [
             "src/registration.php"
