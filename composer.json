@@ -1,11 +1,14 @@
 {
     "name": "infrangible/m2-layout-update",
-    "description": "Infrangible Magento 2 Layout Update",
+    "description": "Groundwork that lets other Infrangible modules adjust page layout elements, such as CSS classes, depending on configuration settings.",
     "type": "magento2-module",
     "version": "2.0.0",
     "license": "MIT",
     "keywords": [
-        "Magento"
+        "Magento",
+        "Magento 2",
+        "Adobe Commerce",
+        "Developer tools"
     ],
     "homepage": "https://www.infrangible.dev/modules/layout-update",
     "authors": [
