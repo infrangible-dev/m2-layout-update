@@ -2,11 +2,14 @@
 
 Changes attributes of layout elements after Magento merged the layout, for example CSS classes of containers, also
 depending on the configuration. The updates are declared in `etc/layout_update.xml` of a module (schema:
-`etc/layout_update.xsd` of this module):
+`etc/layout_update.xsd` of this module, referenced as
+`urn:magento:module:Infrangible_LayoutUpdate:etc/layout_update.xsd` so that IDEs find it; Magento validates with the
+schema of the module either way):
 
 ```xml
 <?xml version="1.0"?>
-<layout>
+<layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Infrangible_LayoutUpdate:etc/layout_update.xsd">
     <element name="div.sidebar.main">
         <update attributeName="htmlClass" action="suffix" type="string" sortOrder="10">sidebar-wide</update>
         <update attributeName="htmlClass" action="suffix" type="string"
