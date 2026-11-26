@@ -2,7 +2,7 @@
     "name": "infrangible/m2-layout-update",
     "description": "Groundwork that lets other Infrangible modules adjust page layout elements, such as CSS classes, depending on configuration settings.",
     "type": "magento2-module",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "license": "MIT",
     "keywords": [
         "Magento",
@@ -20,7 +20,7 @@
         }
     ],
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.1",
         "ext-dom": "*",
         "ext-filter": "*",
         "fewedev/base": "~2.4.1",
